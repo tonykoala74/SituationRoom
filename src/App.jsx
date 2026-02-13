@@ -13,7 +13,6 @@ const App = () => {
   const mapRef = useRef(null);
   const leafletInstance = useRef(null);
 
-  // 定義顏色映射表，確保同編號（a, b, c...）呈現相同顏色
   const colorMap = {
     a: 'border-blue-500 text-blue-400 bg-blue-500/5',
     b: 'border-emerald-500 text-emerald-400 bg-emerald-500/5',
@@ -31,7 +30,6 @@ const App = () => {
         download: true,
         header: true,
         complete: (results) => {
-          // 過濾掉試算表中的空行
           const filtered = results.data.filter(row => row.項目名稱 && row.項目名稱.trim() !== "");
           setData(filtered);
         },
@@ -64,7 +62,6 @@ const App = () => {
   useEffect(() => {
     if (mapLoaded && mapRef.current && !leafletInstance.current) {
       const L = window.L;
-      // 預設中心點設定為南投山區座標
       const map = L.map(mapRef.current).setView([23.9738, 120.9820], 13);
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
       L.marker([23.9738, 120.9820]).addTo(map).bindPopup('前進指揮所 (ICP)').openPopup();
@@ -72,13 +69,11 @@ const App = () => {
     }
   }, [mapLoaded]);
 
-  // 輔助函式：從試算表中尋找內容
   const findValue = (name) => data.find(item => item.項目名稱 === name)?.內容 || "---";
 
   const caseName = findValue("案件名稱");
   const commander = findValue("指揮官");
 
-  // 過濾掉標題項目，剩下的轉為卡片，地圖除外
   const cardItems = data.filter(item => 
     !["案件名稱", "指揮官"].includes(item.項目名稱) && 
     !item.項目名稱.includes("leafjet")
@@ -86,26 +81,43 @@ const App = () => {
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-200 p-4 lg:p-6 font-sans tracking-tight">
-      {/* Header - 戰情室風格標題 */}
-      <header className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 border-b border-slate-800 pb-6 gap-4">
-        <div>
-          <h2 className="text-slate-500 text-xs font-black uppercase tracking-[0.3em] mb-1">{caseName}</h2>
-          <h1 className="text-3xl md:text-4xl font-black text-red-500 flex items-center gap-3">
+      
+      {/* 修正後的 Header 佈局 */}
+      <header className="mb-8 border-b border-slate-800 pb-6">
+        {/* 1. 最上面中間：戰情指揮看板 */}
+        <div className="flex justify-center mb-4">
+          <h1 className="text-3xl md:text-4xl font-black text-[#8B0000] flex items-center gap-3 italic">
             <Activity size={36} strokeWidth={3} className="animate-pulse" />
-            指揮官：{commander}
+            戰情指揮看板
           </h1>
         </div>
-        <div className="text-right">
-          <div className="text-2xl font-mono text-emerald-400 font-bold leading-none">
-            {currentTime.toLocaleTimeString('zh-TW', { hour12: false })}
+
+        {/* 2. 下一行：左側案件/指揮官 與 右側時間 */}
+        <div className="flex flex-row justify-between items-end">
+          <div className="space-y-1">
+            {/* 案件名稱：比大標題小 5 (約 20-24px)，不粗體，深紅色 */}
+            <div className="text-[22px] text-[#8B0000] font-medium">
+              案件名稱：{caseName}
+            </div>
+            {/* 指揮官：比大標題小 8 (約 16-18px)，不粗體，深紅色 */}
+            <div className="text-[18px] text-[#8B0000] font-medium">
+              指揮官：{commander}
+            </div>
           </div>
-          <div className="text-slate-500 text-xs mt-1 font-medium italic">
-            {currentTime.toLocaleDateString('zh-TW')} | 系統穩定運作中
+
+          {/* 3. 右側時間：維持原格式 */}
+          <div className="text-right">
+            <div className="text-2xl font-mono text-emerald-400 font-bold leading-none">
+              {currentTime.toLocaleTimeString('zh-TW', { hour12: false })}
+            </div>
+            <div className="text-slate-500 text-xs mt-1 font-medium italic">
+              {currentTime.toLocaleDateString('zh-TW')} | 系統穩定運作中
+            </div>
           </div>
         </div>
       </header>
 
-      {/* 數據卡片區域 - 在手機上為一列兩格 */}
+      {/* 數據卡片區域 */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-10">
         {cardItems.map((item, index) => {
           const styleClass = colorMap[item.編號] || 'border-slate-700 bg-slate-900/50';
@@ -125,7 +137,7 @@ const App = () => {
         })}
       </div>
 
-      {/* 地圖區域 - 移至最下方 */}
+      {/* 地圖區域 */}
       <section className="space-y-4">
         <div className="flex items-center gap-4">
           <span className="text-slate-600 font-bold text-xs uppercase tracking-[0.4em]">Geospatial Intelligence</span>
