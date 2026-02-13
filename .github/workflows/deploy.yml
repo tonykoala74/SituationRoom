@@ -2,7 +2,7 @@ name: Deploy to GitHub Pages
 
 on:
   push:
-    branches: [ main ]  # 如果你的主分支叫 master，請改成 master
+    branches: [ main ]
 
 jobs:
   build-and-deploy:
@@ -15,18 +15,17 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: 'npm'
+          # 這裡不使用 cache，避免因為缺少 package-lock.json 而報錯
 
       - name: Install and Build
         run: |
           npm install
           npm run build
         env:
-          # 這行最重要！這會把你在網頁設定的 Secret 傳給 Vite
           VITE_SHEET_URL: ${{ secrets.VITE_SHEET_URL }}
 
       - name: Deploy
         uses: JamesIves/github-pages-deploy-action@v4
         with:
-          folder: dist # Vite 打包後的資料夾名稱
-          branch: gh-pages # 部署到的分支
+          folder: dist
+          branch: gh-pages
