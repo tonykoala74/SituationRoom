@@ -3,10 +3,25 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>救災戰情看板</title>
+    <title>救災現場戰情即時看板</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <meta name="theme-color" content="#020617" />
+    
+    <style>
+      /* 確保地圖容器與全螢幕佈局能正確呈現 */
+      html, body, #root {
+        height: 100%;
+        margin: 0;
+        padding: 0;
+        background-color: #020617; /* 預設深色背景防止閃爍 */
+      }
+    </style>
     <script type="module" crossorigin src="/SituationRoom/assets/index-D3n42dSq.js"></script>
   <link rel="manifest" href="/SituationRoom/manifest.webmanifest"><script id="vite-plugin-pwa:register-sw" src="/SituationRoom/registerSW.js"></script></head>
   <body>
     <div id="root"></div>
+    
   </body>
 </html>
