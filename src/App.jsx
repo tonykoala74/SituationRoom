@@ -71,8 +71,8 @@ const App = () => {
 
   const findValue = (name) => data.find(item => item.項目名稱 === name)?.內容 || "---";
 
-  const caseName = findValue("案件名稱");
-  const commander = findValue("指揮官");
+  const caseNameValue = findValue("案件名稱");
+  const commanderValue = findValue("指揮官");
 
   const cardItems = data.filter(item => 
     !["案件名稱", "指揮官"].includes(item.項目名稱) && 
@@ -84,33 +84,33 @@ const App = () => {
       
       {/* 修正後的 Header 佈局 */}
       <header className="mb-8 border-b border-slate-800 pb-6">
-        {/* 1. 最上面中間：戰情指揮看板 */}
-        <div className="flex justify-center mb-4">
-          <h1 className="text-3xl md:text-4xl font-black text-[#8B0000] flex items-center gap-3 italic">
-            <Activity size={36} strokeWidth={3} className="animate-pulse" />
+        {/* 1. 最上面中間：戰情指揮看板 (鮮紅色、最粗體、字體加大) */}
+        <div className="flex justify-center mb-6">
+          <h1 className="text-5xl md:text-6xl font-black text-[#FF0000] flex items-center gap-4 italic">
+            <Activity size={52} strokeWidth={3} className="animate-pulse" />
             戰情指揮看板
           </h1>
         </div>
 
-        {/* 2. 下一行：左側案件/指揮官 與 右側時間 */}
+        {/* 2. 下一行：左側內容 與 右側時間 */}
         <div className="flex flex-row justify-between items-end">
-          <div className="space-y-1">
-            {/* 案件名稱：比大標題小 5 (約 20-24px)，不粗體，深紅色 */}
-            <div className="text-[22px] text-[#8B0000] font-medium">
-              案件名稱：{caseName}
+          <div className="space-y-2">
+            {/* 案件名稱內容：鮮紅色、粗體、字體比前版大 5 (約 32px) */}
+            <div className="text-[32px] text-[#FF0000] font-black">
+              {caseNameValue}
             </div>
-            {/* 指揮官：比大標題小 8 (約 16-18px)，不粗體，深紅色 */}
-            <div className="text-[18px] text-[#8B0000] font-medium">
-              指揮官：{commander}
+            {/* 指揮官：鮮紅色、不用粗體、字體比前版大 5 (約 28px) */}
+            <div className="text-[28px] text-[#FF0000] font-medium">
+              指揮官：{commanderValue}
             </div>
           </div>
 
-          {/* 3. 右側時間：維持原格式 */}
+          {/* 3. 右側時間：字體大小比現在大 10 */}
           <div className="text-right">
-            <div className="text-2xl font-mono text-emerald-400 font-bold leading-none">
+            <div className="text-[44px] font-mono text-emerald-400 font-bold leading-none">
               {currentTime.toLocaleTimeString('zh-TW', { hour12: false })}
             </div>
-            <div className="text-slate-500 text-xs mt-1 font-medium italic">
+            <div className="text-slate-500 text-lg mt-2 font-medium italic">
               {currentTime.toLocaleDateString('zh-TW')} | 系統穩定運作中
             </div>
           </div>
@@ -143,7 +143,7 @@ const App = () => {
           <span className="text-slate-600 font-bold text-xs uppercase tracking-[0.4em]">Geospatial Intelligence</span>
           <div className="h-[1px] flex-1 bg-slate-800"></div>
         </div>
-        <div className="bg-slate-900 rounded-3xl overflow-hidden border border-slate-800 h-[400px] md:h-[600px] relative">
+        <div className="bg-slate-900 rounded-3xl overflow-hidden border border-slate-800 h-[400px] md:h-[600px] relative shadow-2xl">
           {!mapLoaded && (
             <div className="absolute inset-0 flex flex-col items-center justify-center bg-slate-950/90 z-20">
               <Loader2 className="animate-spin text-red-500 mb-4" size={40} />
@@ -155,7 +155,7 @@ const App = () => {
       </section>
 
       <footer className="mt-12 text-center text-slate-700 text-[9px] font-mono uppercase tracking-[0.5em]">
-        Rescue Command System v2.0 | Confidential Data Access
+        Rescue Command System v2.0 | Operational Data Stable
       </footer>
     </div>
   );
