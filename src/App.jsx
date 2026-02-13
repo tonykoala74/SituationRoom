@@ -13,15 +13,15 @@ const App = () => {
   const mapRef = useRef(null);
   const leafletInstance = useRef(null);
 
-  // 顏色配置：手機版採用滿版背景色，電腦版維持邊框樣式
+  // 顏色配置：移除 md: 限制，讓電腦版也同步使用滿版背景色與白色文字
   const colorMap = {
-    a: 'bg-blue-600 border-white text-white md:bg-transparent md:border-blue-500 md:text-blue-400 md:bg-blue-500/5',
-    b: 'bg-emerald-500 border-white text-white md:bg-transparent md:border-emerald-500 md:text-emerald-400 md:bg-emerald-500/5',
-    c: 'bg-emerald-500 border-white text-white md:bg-transparent md:border-emerald-500 md:text-emerald-400 md:bg-emerald-500/5',
-    d: 'bg-slate-700 border-white text-white md:bg-transparent md:border-purple-500 md:text-purple-400 md:bg-purple-500/5',
-    e: 'bg-emerald-500 border-white text-white md:bg-transparent md:border-red-500 md:text-red-400 md:bg-red-500/5',
-    f: 'bg-emerald-500 border-white text-white md:bg-transparent md:border-pink-500 md:text-pink-400 md:bg-pink-500/5',
-    g: 'bg-emerald-500 border-white text-white md:bg-transparent md:border-orange-500 md:text-orange-400 md:bg-orange-500/5'
+    a: 'bg-blue-600 border-blue-400 text-white shadow-blue-900/20',
+    b: 'bg-emerald-600 border-emerald-400 text-white shadow-emerald-900/20',
+    c: 'bg-emerald-500 border-emerald-300 text-white shadow-emerald-800/20',
+    d: 'bg-slate-700 border-slate-500 text-white shadow-slate-900/20',
+    e: 'bg-teal-600 border-teal-400 text-white shadow-teal-900/20',
+    f: 'bg-teal-500 border-teal-300 text-white shadow-teal-800/20',
+    g: 'bg-orange-600 border-orange-400 text-white shadow-orange-900/20'
   };
 
   useEffect(() => {
@@ -80,7 +80,7 @@ const App = () => {
   );
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-200 p-4 lg:p-6 font-sans tracking-tight">
+    <div className="min-h-screen bg-black text-slate-200 p-4 lg:p-6 font-sans tracking-tight">
       
       {/* 響應式 Header：手機版置中，電腦版左右排列 */}
       <header className="mb-8 border-b border-slate-800 pb-6">
@@ -116,17 +116,17 @@ const App = () => {
         </div>
       </header>
 
-      {/* 數據卡片區域：手機版單欄/滿版色塊，電腦版多欄/透明樣式 */}
+      {/* 數據卡片區域：電腦版與手機版統一使用滿版背景色 */}
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-10">
         {cardItems.map((item, index) => {
-          const styleClass = colorMap[item.編號] || 'bg-slate-800 md:bg-slate-900/50 border-slate-700';
+          const styleClass = colorMap[item.編號] || 'bg-slate-800 border-slate-600 text-white';
           
           return (
             <div 
               key={index} 
-              className={`p-5 rounded-2xl border-2 md:border-0 md:border-l-[10px] shadow-2xl flex flex-col items-center md:items-start justify-center text-center md:text-left ${styleClass}`}
+              className={`p-6 rounded-2xl border-2 shadow-xl flex flex-col items-center justify-center text-center transition-all hover:scale-[1.02] ${styleClass}`}
             >
-              <div className="text-white md:text-slate-400 text-sm md:text-xs font-bold uppercase tracking-widest mb-2 opacity-90 md:opacity-70">
+              <div className="text-sm md:text-base font-bold uppercase tracking-widest mb-2 opacity-90">
                 {item.項目名稱}
               </div>
               <div className="text-3xl md:text-5xl font-black tracking-tighter">
