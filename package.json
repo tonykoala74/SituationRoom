@@ -1,171 +1,22 @@
-import React, { useState, useEffect, useRef } from 'react';
-import Papa from 'papaparse';
-import { 
-  Clock, Users, Map as LucideMap, Activity, Dog, Truck, 
-  AlertTriangle, CheckCircle, Skull, CloudSun, Wind, 
-  Droplets, Timer, Navigation, Loader2, AlertCircle 
-} from 'lucide-react';
-
-const App = () => {
-  const [currentTime, setCurrentTime] = useState(new Date());
-  const [data, setData] = useState([]); // 存儲 Google Sheets 的原始資料
-  const [mapLoaded, setMapLoaded] = useState(false);
-  const [error, setError] = useState(null);
-  const mapRef = useRef(null);
-  const leafletInstance = useRef(null);
-
-  // 1. 動態計算統計數據 (從 Google Sheets 資料中提取)
-  const getStats = () => {
-    // 這裡示範如何從資料列中統計，假設你的 Sheets 有這些欄位
-    return {
-      totalPersonnel: data.reduce((acc, row) => acc + (parseInt(row.投入人數) || 0), 0),
-      realtimeOnsite: data.reduce((acc, row) => acc + (parseInt(row.在場人數) || 0), 0),
-      rescued: data.reduce((acc, row) => acc + (parseInt(row.獲救人數) || 0), 0),
-      pending: data.reduce((acc, row) => acc + (parseInt(row.待救人數) || 0), 0),
-      deceased: data.reduce((acc, row) => acc + (parseInt(row.死亡人數) || 0), 0),
-      // 氣象與時間可先保留或從 Sheets 的第一列讀取
-      weather: {
-        temp: 24,
-        humidity: 78,
-        wind: "西北風 15km/h",
-        condition: "多雲轉陣雨"
-      }
-    };
-  };
-
-  const dynamicStats = getStats();
-
-  // 2. 資料抓取邏輯
-  useEffect(() => {
-    const sheetUrl = import.meta.env.VITE_SHEET_URL;
-    const fetchData = () => {
-      Papa.parse(sheetUrl, {
-        download: true,
-        header: true,
-        complete: (results) => {
-          const filtered = results.data.filter(row => Object.values(row).some(v => v !== ""));
-          setData(filtered);
-        },
-        error: (err) => setError("資料抓取失敗")
-      });
-    };
-
-    fetchData();
-    const dataTimer = setInterval(fetchData, 30000);
-    const clockTimer = setInterval(() => setCurrentTime(new Date()), 1000);
-
-    // 初始化地圖資源
-    const initMap = async () => {
-      try {
-        if (!document.querySelector('link[href*="leaflet.css"]')) {
-          const link = document.createElement('link');
-          link.rel = 'stylesheet';
-          link.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
-          document.head.appendChild(link);
-        }
-        if (!window.L) {
-          const script = document.createElement('script');
-          script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
-          script.onload = () => setMapLoaded(true);
-          document.head.appendChild(script);
-        } else {
-          setMapLoaded(true);
-        }
-      } catch (err) { setError("地圖元件載入失敗"); }
-    };
-
-    initMap();
-    return () => { clearInterval(dataTimer); clearInterval(clockTimer); };
-  }, []);
-
-  // 3. 地圖渲染邏輯
-  useEffect(() => {
-    if (mapLoaded && mapRef.current && !leafletInstance.current) {
-      const L = window.L;
-      const map = L.map(mapRef.current).setView([23.973875, 120.982025], 13);
-      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
-      L.marker([23.973875, 120.982025]).addTo(map).bindPopup('前進指揮所 (ICP)').openPopup();
-      leafletInstance.current = map;
-    }
-  }, [mapLoaded]);
-
-  // 通用組件
-  const StatBox = ({ icon: Icon, label, value, color, subValue }) => (
-    <div className="bg-slate-800 p-4 rounded-xl border border-slate-700 shadow-lg flex flex-col justify-between">
-      <div className="flex items-center gap-2 mb-2">
-        {Icon && <Icon className={color} size={20} />}
-        <span className="text-slate-400 text-sm font-medium">{label}</span>
-      </div>
-      <div className="flex flex-col">
-        <span className="text-2xl font-bold text-white tracking-tight">{value}</span>
-        {subValue && <span className="text-xs text-slate-500 mt-1">{subValue}</span>}
-      </div>
-    </div>
-  );
-
-  return (
-    <div className="min-h-screen bg-slate-950 text-slate-200 p-4 lg:p-6 font-sans">
-      <header className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4 border-b border-slate-800 pb-4">
-        <div>
-          <h1 className="text-2xl md:text-3xl font-black text-red-500 tracking-tighter flex items-center gap-2">
-            <Activity size={32} strokeWidth={3} />
-            救災現場戰情即時看板
-          </h1>
-          <p className="text-slate-400 text-sm mt-1 flex items-center gap-2">
-            <Navigation size={14} className="text-emerald-500" />
-            當前位置：南投縣山區搜救現場 | 指揮官：Tony
-          </p>
-        </div>
-        <div className="text-right">
-          <div className="text-xl font-mono text-emerald-400 font-bold">
-            {currentTime.toLocaleTimeString('zh-TW', { hour12: false })}
-          </div>
-          <div className="text-slate-500 text-xs">{currentTime.toLocaleDateString('zh-TW')}</div>
-        </div>
-      </header>
-
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        {/* 左欄 */}
-        <div className="lg:col-span-3 space-y-4">
-          <StatBox icon={Users} label="累計動員人數" value={`${dynamicStats.totalPersonnel} 人`} color="text-blue-400" />
-          <div className="bg-slate-900/50 p-4 rounded-xl border border-dashed border-slate-700">
-            <h3 className="text-xs font-bold text-slate-500 uppercase mb-3">今日任務概況</h3>
-            <div className="text-sm space-y-2">
-              <div className="flex justify-between"><span>案件總數</span><span className="text-white font-bold">{data.length}</span></div>
-              <div className="flex justify-between"><span>緊急待辦</span><span className="text-red-400 font-bold">{dynamicStats.pending}</span></div>
-            </div>
-          </div>
-          {/* 天氣資訊 */}
-          <div className="bg-indigo-900/20 p-4 rounded-xl border border-indigo-500/30">
-            <div className="flex items-center gap-2 mb-2"><CloudSun className="text-indigo-400" size={18} /><span>現場天氣</span></div>
-            <div className="text-2xl font-bold">{dynamicStats.weather.temp}°C</div>
-          </div>
-        </div>
-
-        {/* 中欄：地圖 */}
-        <div className="lg:col-span-6 flex flex-col gap-4">
-          <div className="bg-slate-800 rounded-xl overflow-hidden border border-slate-700 h-[450px] relative">
-            {!mapLoaded && <div className="absolute inset-0 flex items-center justify-center bg-slate-900/80"><Loader2 className="animate-spin" /></div>}
-            <div ref={mapRef} className="w-full h-full" />
-            <div className="absolute bottom-4 right-4 z-[1000] bg-red-600 px-4 py-2 rounded-lg animate-pulse">
-              <div className="text-[10px] text-red-100">即時在場人數</div>
-              <div className="text-xl font-bold">{dynamicStats.realtimeOnsite} 人</div>
-            </div>
-          </div>
-        </div>
-
-        {/* 右欄：傷亡統計 */}
-        <div className="lg:col-span-3 space-y-4">
-          <div className="bg-slate-800 rounded-xl border border-slate-700 p-4 space-y-3">
-            <h3 className="text-sm font-bold border-b border-slate-700 pb-2">人員傷亡統計</h3>
-            <div className="flex justify-between p-2 bg-emerald-900/20 rounded"><span>獲救</span><span className="text-emerald-500 font-bold">{dynamicStats.rescued}</span></div>
-            <div className="flex justify-between p-2 bg-amber-900/20 rounded"><span>待救</span><span className="text-amber-500 font-bold">{dynamicStats.pending}</span></div>
-            <div className="flex justify-between p-2 bg-red-900/20 rounded"><span>死亡</span><span className="text-red-500 font-bold">{dynamicStats.deceased}</span></div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-export default App;
+{
+  "name": "situation-room",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "papaparse": "^5.4.1",
+    "lucide-react": "^0.344.0"
+  },
+  "devDependencies": {
+    "vite": "^5.0.0",
+    "@vitejs/plugin-react": "^4.2.0",
+    "vite-plugin-pwa": "^0.17.4"
+  }
+}
