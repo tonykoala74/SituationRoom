@@ -13,15 +13,32 @@ const App = () => {
   const mapRef = useRef(null);
   const leafletInstance = useRef(null);
 
-  // 顏色配置：移除 md: 限制，讓電腦版也同步使用滿版背景色與白色文字
-  const colorMap = {
-    a: 'bg-blue-600 border-blue-400 text-white shadow-blue-900/20',
-    b: 'bg-emerald-600 border-emerald-400 text-white shadow-emerald-900/20',
-    c: 'bg-emerald-500 border-emerald-300 text-white shadow-emerald-800/20',
-    d: 'bg-slate-700 border-slate-500 text-white shadow-slate-900/20',
-    e: 'bg-teal-600 border-teal-400 text-white shadow-teal-900/20',
-    f: 'bg-teal-500 border-teal-300 text-white shadow-teal-800/20',
-    g: 'bg-orange-600 border-orange-400 text-white shadow-orange-900/20'
+  // 1. 定義顏色清單陣列，便於自動循環
+  const colorSequence = [
+    'bg-blue-600 border-blue-400',    // a
+    'bg-emerald-600 border-emerald-400', // b
+    'bg-cyan-600 border-cyan-300',    // c
+    'bg-pink-700 border-pink-500',    // d
+    'bg-purple-600 border-teal-400',  // e
+    'bg-zinc-500 border-teal-300',    // f
+    'bg-orange-600 border-orange-400', // g
+    'bg-yellow-500 border-teal-300',  // h
+    'bg-lime-500 border-teal-300',    // i
+    'bg-violet-500 border-teal-300'   // j
+  ];
+
+  // 2. 顏色獲取邏輯：支援 a-j 指定與自動循環
+  const getCardStyle = (code) => {
+    if (!code) return 'bg-slate-800 border-slate-600';
+    
+    const charCode = code.toLowerCase().charCodeAt(0);
+    const startIndex = 'a'.charCodeAt(0);
+    
+    // 計算索引值，若超過 j (索引 9) 則自動循環
+    const index = (charCode - startIndex) % colorSequence.length;
+    
+    // 如果編號不是英文字母，則給予預設色，否則回傳對應顏色
+    return colorSequence[index] || 'bg-slate-800 border-slate-600';
   };
 
   useEffect(() => {
@@ -82,9 +99,7 @@ const App = () => {
   return (
     <div className="min-h-screen bg-black text-slate-200 p-4 lg:p-6 font-sans tracking-tight">
       
-      {/* 響應式 Header：手機版置中，電腦版左右排列 */}
       <header className="mb-8 border-b border-slate-800 pb-6">
-        {/* 1. 標題：手機版置中 */}
         <div className="flex justify-center mb-6">
           <h1 className="text-4xl md:text-6xl font-black text-[#FF0000] flex items-center gap-4 italic">
             <Activity size={52} strokeWidth={3} className="animate-pulse" />
@@ -94,17 +109,14 @@ const App = () => {
 
         <div className="flex flex-col md:flex-row justify-between items-center md:items-end gap-4">
           <div className="space-y-2 text-center md:text-left">
-            {/* 案件名稱內容 */}
             <div className="text-[32px] md:text-[40px] text-[#FF0000] font-black leading-tight">
               {caseNameValue}
             </div>
-            {/* 指揮官 */}
             <div className="text-[28px] md:text-[32px] text-[#FF0000] font-medium">
               指揮官：{commanderValue}
             </div>
           </div>
 
-          {/* 3. 時間區域：手機版置中 */}
           <div className="text-center md:text-right">
             <div className="text-[44px] md:text-[52px] font-mono text-emerald-400 font-bold leading-none">
               {currentTime.toLocaleTimeString('zh-TW', { hour12: false })}
@@ -116,15 +128,15 @@ const App = () => {
         </div>
       </header>
 
-      {/* 數據卡片區域：電腦版與手機版統一使用滿版背景色 */}
+      {/* 數據卡片區域：自動循環顏色 */}
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-10">
         {cardItems.map((item, index) => {
-          const styleClass = colorMap[item.編號] || 'bg-slate-800 border-slate-600 text-white';
+          const cardStyle = getCardStyle(item.編號);
           
           return (
             <div 
               key={index} 
-              className={`p-6 rounded-2xl border-2 shadow-xl flex flex-col items-center justify-center text-center transition-all hover:scale-[1.02] ${styleClass}`}
+              className={`p-6 rounded-2xl border-2 shadow-xl flex flex-col items-center justify-center text-center transition-all hover:scale-[1.02] text-white ${cardStyle}`}
             >
               <div className="text-sm md:text-base font-bold uppercase tracking-widest mb-2 opacity-90">
                 {item.項目名稱}
@@ -137,7 +149,6 @@ const App = () => {
         })}
       </div>
 
-      {/* 地圖區域 */}
       <section className="space-y-4">
         <div className="bg-slate-900 rounded-3xl overflow-hidden border border-slate-800 h-[350px] md:h-[600px] relative shadow-2xl">
           {!mapLoaded && (
